@@ -1,0 +1,54 @@
+void kernel cell(global const int* columnCount, global const int* rowCount, global const int* inputCellValues, global int* outputCellValues)
+{
+    int idX = get_global_id(0);
+    int idY = get_global_id(1);
+
+    if (idX>=columnCount[0] || idY>=rowCount[0])
+    {
+        return;
+    }
+
+    int cellColumn = idX;
+    int cellRow = idY;
+
+    int livingNeighboursCount = 0;
+    for (int i=0; i<3; i++)
+    {
+        for (int j=0; j<3; j++)
+        {
+            if (cellColumn+i-1>=0 && cellRow+j-1>=0 && cellColumn+i-1<columnCount[0] && cellRow+j-1<rowCount[0])
+            {
+                if (i!=1 || j!=1)//because "the middle" adjacent cell, so the processed cell itself, shouldn't actually count as its own neighbour
+                {
+                    if (inputCellValues[(cellColumn+i-1)*rowCount[0]+cellRow+j-1] == 1)
+                    {
+                        livingNeighboursCount++;
+                    }
+                }
+            }
+        }
+    }
+
+    if (inputCellValues[cellColumn*rowCount[0]+cellRow] == 0)
+    {
+        if (livingNeighboursCount == 3)
+        {
+            outputCellValues[cellColumn*rowCount[0]+cellRow] = 1;
+        }
+        else
+        {
+            outputCellValues[cellColumn*rowCount[0]+cellRow] = 0;
+        }
+    }
+    else
+    {
+        if (livingNeighboursCount == 2 || livingNeighboursCount == 3)
+        {
+            outputCellValues[cellColumn*rowCount[0]+cellRow] = 1;
+        }
+        else
+        {
+            outputCellValues[cellColumn*rowCount[0]+cellRow] = 0;
+        }
+    }
+}
